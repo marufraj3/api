@@ -4,8 +4,6 @@ exports.handler = async (event, context) => {
   const API_URL = 'https://mothersmm.com/adminapi/v2/orders';
   const API_KEY = process.env.API_KEY;
 
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
   let offset = 0;
   let allOrders = [];
   let hasNextPage = true;
@@ -26,10 +24,15 @@ exports.handler = async (event, context) => {
       }
 
       const data = await response.json();
-      const orders = data.data.list || [];
+
+      if (!data.data || !data.data.list) {
+        throw new Error('Unexpected API response: "list" not found');
+      }
+
+      const orders = data.data.list;
       allOrders.push(...orders);
 
-      // Check if there's a next page
+      // Check for next page
       if (data.data.pagination && data.data.pagination.next_page_href) {
         offset += 100;
       } else {
@@ -37,12 +40,8 @@ exports.handler = async (event, context) => {
       }
     }
 
-    // Filter completed orders from last 7 days
-    const completedOrders = allOrders.filter(order => {
-      if (order.status.toLowerCase() !== 'completed') return false;
-      const createdAt = new Date(order.created.replace(' ', 'T'));
-      return createdAt >= sevenDaysAgo;
-    });
+    // ✅ Filter only "completed" orders
+    const completedOrders = allOrders.filter(order => order.status.toLowerCase() === 'completed');
 
     return {
       statusCode: 200,
@@ -51,12 +50,13 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        totalCompletedIn7Days: completedOrders.length,
+        totalCompletedOrders: completedOrders.length,
         completedOrders
       })
     };
 
   } catch (error) {
+    console.error('Error:', error);
     return {
       statusCode: 500,
       headers: {
