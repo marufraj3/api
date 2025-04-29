@@ -1,3 +1,4 @@
+// netlify/functions/getOrders.js
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
@@ -6,7 +7,7 @@ exports.handler = async (event, context) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Api-Key': process.env.API_KEY
+        'X-Api-Key': process.env.API_KEY // Netlify Environment Variable
       }
     });
 
@@ -15,32 +16,20 @@ exports.handler = async (event, context) => {
     }
 
     const data = await response.json();
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    const completedOrdersLast7Days = data.orders.filter(order => {
-      return (
-        order.status === 'Completed' &&
-        new Date(order.completed_at) >= sevenDaysAgo
-      );
-    });
 
     return {
       statusCode: 200,
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': '*', // ✅ Allow frontend to access
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        count: completedOrdersLast7Days.length,
-        orders: completedOrdersLast7Days
-      })
+      body: JSON.stringify(data)
     };
   } catch (error) {
     return {
       statusCode: 500,
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': '*', // ✅ Even for errors
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ error: error.message })
