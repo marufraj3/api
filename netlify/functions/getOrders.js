@@ -1,5 +1,5 @@
 // netlify/functions/getOrders.js
-const fetch = require('node-fetch'); // Needed for fetch in Node.js
+const fetch = require('node-fetch'); // ✅ v2 সঠিকভাবে কাজ করবে
 
 exports.handler = async (event, context) => {
   try {
@@ -7,19 +7,23 @@ exports.handler = async (event, context) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Api-Key': process.env.API_KEY // 🔒 Hidden key
+        'X-Api-Key': process.env.API_KEY // Netlify-র 
       }
     });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
 
     const data = await response.json();
     return {
       statusCode: 200,
-      body: JSON.stringify(data),
+      body: JSON.stringify(data)
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Failed to fetch orders" }),
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
