@@ -1,0 +1,8 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "type": "commonjs", // ✅ এই লাইনটি যোগ করুন
+  "dependencies": {
+    "node-fetch": "^2.6.7" // v2 নিশ্চিত করুন
+  }
+}
