@@ -1,31 +1,29 @@
-const axios = require("axios");
+// netlify/functions/getOrders.js
+const fetch = require('node-fetch'); // ✅ v2 সঠিকভাবে কাজ করবে
 
-exports.handler = async function (event, context) {
+exports.handler = async (event, context) => {
   try {
-    const response = await axios.get("https://mothersmm.com/adminapi/v2/orders", {
+    const response = await fetch('https://mothersmm.com/adminapi/v2/orders', {
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
-        "X-Api-Key": "qje4lrolbtxr458ryiswdxh7irt9l4e920x4kwgylpucapqo9qk2145wmpfw53im"
+        'Content-Type': 'application/json',
+        'X-Api-Key': process.env.API_KEY // Netlify-র 
       }
     });
 
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+
+    const data = await response.json();
     return {
       statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*", // ✅ এটা যুক্ত কর
-        "Access-Control-Allow-Headers": "Content-Type"
-      },
-      body: JSON.stringify({ data: response.data })
+      body: JSON.stringify(data)
     };
   } catch (error) {
-    console.error("API Error:", error);
     return {
       statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*", // ✅ error response এও
-        "Access-Control-Allow-Headers": "Content-Type"
-      },
-      body: JSON.stringify({ error: "Failed to fetch orders", details: error.message })
+      body: JSON.stringify({ error: error.message })
     };
   }
 };
