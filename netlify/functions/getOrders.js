@@ -1,5 +1,5 @@
 // netlify/functions/getOrders.js
-const fetch = require('node-fetch'); // ✅ v2 সঠিকভাবে কাজ করবে
+const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   try {
@@ -7,7 +7,7 @@ exports.handler = async (event, context) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Api-Key': process.env.API_KEY // Netlify-র 
+        'X-Api-Key': process.env.API_KEY // Netlify Environment Variable
       }
     });
 
@@ -16,13 +16,22 @@ exports.handler = async (event, context) => {
     }
 
     const data = await response.json();
+
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*', // ✅ Allow frontend to access
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(data)
     };
   } catch (error) {
     return {
       statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*', // ✅ Even for errors
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({ error: error.message })
     };
   }
