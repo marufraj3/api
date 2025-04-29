@@ -21,10 +21,12 @@ exports.handler = async (event, context) => {
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const completedOrders = orders.filter(order => {
-      return (
-        order.status.toLowerCase() === 'completed' &&
-        new Date(order.created) >= sevenDaysAgo
-      );
+      if (order.status.toLowerCase() !== 'completed') return false;
+
+      // created = "2025-04-30 02:20:43"
+      const createdAt = new Date(order.created.replace(' ', 'T')); // make it ISO format
+
+      return createdAt >= sevenDaysAgo;
     });
 
     return {
