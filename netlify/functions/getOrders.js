@@ -1,22 +1,21 @@
-// netlify/functions/getOrders.js
 const fetch = require('node-fetch');
 
 exports.handler = async (event, context) => {
   try {
-    const params = event.queryStringParameters || {};
-    
-    // Defaults if not provided
-    const created_from = params.created_from || Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 90; // last 90 days
-    const limit = params.limit || 10;
-    const offset = params.offset || 0;
+    // Query parameters from frontend (optional)
+    const { created_from, limit, offset } = event.queryStringParameters;
 
-    const url = `https://mothersmm.com/adminapi/v2/orders?created_from=${created_from}&limit=${limit}&offset=${offset}`;
+    // Construct URL with optional query params
+    const url = new URL('https://mothersmm.com/adminapi/v2/orders');
+    if (created_from) url.searchParams.append('created_from', created_from);
+    if (limit) url.searchParams.append('limit', limit);
+    if (offset) url.searchParams.append('offset', offset);
 
-    const response = await fetch(url, {
+    const response = await fetch(url.toString(), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Api-Key': process.env.API_KEY
+        'X-Api-Key': process.env.API_KEY // set this securely in Netlify env variables
       }
     });
 
@@ -34,6 +33,7 @@ exports.handler = async (event, context) => {
       },
       body: JSON.stringify(data)
     };
+
   } catch (error) {
     return {
       statusCode: 500,
