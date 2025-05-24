@@ -20,7 +20,7 @@ exports.handler = async (event, context) => {
     } = event.queryStringParameters || {};
 
     // Build the URL
-    const url = new URL('https://mothersmm.com/adminapi/v2/orders');
+    const url = new URL('https://mothersmm.cm/adminapi/v2/orders');
 
     // Append query params if present
     url.searchParams.append('created_from', created_from);
